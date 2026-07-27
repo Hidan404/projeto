@@ -4,34 +4,36 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-def chunk_documents(
-    documents: List[Document],
-    chunk_size: int = 1000,
-    chunk_overlap: int = 200,
+def dividir_documentos(
+    documentos: List[Document],
+    tamanho_chunk: int = 1000,
+    sobreposicao_chunk: int = 200,
 ) -> List[Document]:
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
+    divisor = RecursiveCharacterTextSplitter(
+        chunk_size=tamanho_chunk,
+        chunk_overlap=sobreposicao_chunk,
         separators=["\n\n", "\n", ". ", " ", ""],
         length_function=len,
     )
-    return splitter.split_documents(documents)
+    return divisor.split_documents(documentos)
 
 
 if __name__ == "__main__":
-    from loader import load_document, load_documents_from_dir
+    from loader import carregar_documento, carregar_documentos_do_diretorio
     import sys, os
 
-    target = sys.argv[1] if len(sys.argv) > 1 else "../data/documents"
-    if os.path.isdir(target):
-        docs = load_documents_from_dir(target)
+    alvo = sys.argv[1] if len(sys.argv) > 1 else "../data/documents"
+    if os.path.isdir(alvo):
+        docs = carregar_documentos_do_diretorio(alvo)
     else:
-        docs = load_document(target)
+        docs = carregar_documento(alvo)
 
-    chunks = chunk_documents(docs)
+    pedacos = dividir_documentos(docs)
     print(f"Documentos carregados: {len(docs)}")
-    print(f"Chunks gerados: {len(chunks)}")
-    print(f"Tamanho médio dos chunks: {sum(len(c.page_content) for c in chunks) / len(chunks):.0f} chars")
-    for c in chunks[:3]:
-        print(f"\n--- Chunk (fonte: {c.metadata.get('source', '?')}) ---")
-        print(c.page_content[:200])
+    print(f"Chunks gerados: {len(pedacos)}")
+    if pedacos:
+        tamanho_medio = sum(len(p.page_content) for p in pedacos) / len(pedacos)
+        print(f"Tamanho medio dos chunks: {tamanho_medio:.0f} caracteres")
+        for p in pedacos[:3]:
+            print(f"\n--- Chunk (fonte: {p.metadata.get('source', '?')}) ---")
+            print(p.page_content[:200])

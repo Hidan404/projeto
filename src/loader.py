@@ -1,5 +1,4 @@
 import os
-import tempfile
 from typing import List
 
 from langchain_community.document_loaders import (
@@ -15,91 +14,91 @@ from langchain_community.document_loaders import (
 from langchain_core.documents import Document
 
 
-def load_document(file_path: str) -> List[Document]:
-    ext = os.path.splitext(file_path)[1].lower()
-    ext_map = {
-        ".pdf": _load_pdf,
-        ".txt": _load_text,
-        ".md": _load_markdown,
-        ".csv": _load_csv,
-        ".json": _load_json,
-        ".docx": _load_docx,
-        ".pptx": _load_pptx,
-        ".html": _load_html,
-        ".htm": _load_html,
-        ".xlsx": _load_xlsx,
-        ".xls": _load_xlsx,
+def carregar_documento(caminho_arquivo: str) -> List[Document]:
+    ext = os.path.splitext(caminho_arquivo)[1].lower()
+    mapa_ext = {
+        ".pdf": _carregar_pdf,
+        ".txt": _carregar_texto,
+        ".md": _carregar_markdown,
+        ".csv": _carregar_csv,
+        ".json": _carregar_json,
+        ".docx": _carregar_docx,
+        ".pptx": _carregar_pptx,
+        ".html": _carregar_html,
+        ".htm": _carregar_html,
+        ".xlsx": _carregar_xlsx,
+        ".xls": _carregar_xlsx,
     }
-    loader_fn = ext_map.get(ext)
-    if not loader_fn:
-        raise ValueError(f"Formato não suportado: {ext}")
-    return loader_fn(file_path)
+    func_carregador = mapa_ext.get(ext)
+    if not func_carregador:
+        raise ValueError(f"Formato nao suportado: {ext}")
+    return func_carregador(caminho_arquivo)
 
 
-def load_documents_from_dir(directory: str) -> List[Document]:
-    all_docs = []
-    for root, _, files in os.walk(directory):
-        for fname in files:
-            path = os.path.join(root, fname)
+def carregar_documentos_do_diretorio(diretorio: str) -> List[Document]:
+    todos_docs = []
+    for raiz, _, arquivos in os.walk(diretorio):
+        for nome_arquivo in arquivos:
+            caminho = os.path.join(raiz, nome_arquivo)
             try:
-                docs = load_document(path)
-                all_docs.extend(docs)
-                print(f"  OK  {fname} ({len(docs)} páginas/chunks)")
+                docs = carregar_documento(caminho)
+                todos_docs.extend(docs)
+                print(f"  OK  {nome_arquivo} ({len(docs)} paginas/blocos)")
             except Exception as e:
-                print(f"  ERRO {fname}: {e}")
-    return all_docs
+                print(f"  ERRO {nome_arquivo}: {e}")
+    return todos_docs
 
 
-def _load_pdf(path: str) -> List[Document]:
-    loader = PyPDFLoader(path)
-    return loader.load()
+def _carregar_pdf(caminho: str) -> List[Document]:
+    carregador = PyPDFLoader(caminho)
+    return carregador.load()
 
 
-def _load_text(path: str) -> List[Document]:
-    loader = TextLoader(path, encoding="utf-8")
-    return loader.load()
+def _carregar_texto(caminho: str) -> List[Document]:
+    carregador = TextLoader(caminho, encoding="utf-8")
+    return carregador.load()
 
 
-def _load_markdown(path: str) -> List[Document]:
-    loader = UnstructuredMarkdownLoader(path)
-    return loader.load()
+def _carregar_markdown(caminho: str) -> List[Document]:
+    carregador = UnstructuredMarkdownLoader(caminho)
+    return carregador.load()
 
 
-def _load_csv(path: str) -> List[Document]:
-    loader = CSVLoader(path, encoding="utf-8")
-    return loader.load()
+def _carregar_csv(caminho: str) -> List[Document]:
+    carregador = CSVLoader(caminho, encoding="utf-8")
+    return carregador.load()
 
 
-def _load_json(path: str) -> List[Document]:
-    loader = JSONLoader(path, jq_schema=".", text_content=False)
-    return loader.load()
+def _carregar_json(caminho: str) -> List[Document]:
+    carregador = JSONLoader(caminho, jq_schema=".", text_content=False)
+    return carregador.load()
 
 
-def _load_docx(path: str) -> List[Document]:
-    loader = Docx2txtLoader(path)
-    return loader.load()
+def _carregar_docx(caminho: str) -> List[Document]:
+    carregador = Docx2txtLoader(caminho)
+    return carregador.load()
 
 
-def _load_pptx(path: str) -> List[Document]:
-    loader = UnstructuredPowerPointLoader(path)
-    return loader.load()
+def _carregar_pptx(caminho: str) -> List[Document]:
+    carregador = UnstructuredPowerPointLoader(caminho)
+    return carregador.load()
 
 
-def _load_html(path: str) -> List[Document]:
-    loader = UnstructuredHTMLLoader(path)
-    return loader.load()
+def _carregar_html(caminho: str) -> List[Document]:
+    carregador = UnstructuredHTMLLoader(caminho)
+    return carregador.load()
 
 
-def _load_xlsx(path: str) -> List[Document]:
+def _carregar_xlsx(caminho: str) -> List[Document]:
     import pandas as pd
     docs = []
-    xl = pd.ExcelFile(path)
-    for sheet_name in xl.sheet_names:
-        df = pd.read_excel(path, sheet_name=sheet_name)
-        content = df.to_string(index=False)
+    planilha = pd.ExcelFile(caminho)
+    for nome_aba in planilha.sheet_names:
+        df = pd.read_excel(caminho, sheet_name=nome_aba)
+        conteudo = df.to_string(index=False)
         doc = Document(
-            page_content=content,
-            metadata={"source": path, "sheet": sheet_name},
+            page_content=conteudo,
+            metadata={"source": caminho, "sheet": nome_aba},
         )
         docs.append(doc)
     return docs
@@ -108,13 +107,13 @@ def _load_xlsx(path: str) -> List[Document]:
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("Uso: python loader.py <arquivo-ou-diretório>")
+        print("Uso: python loader.py <arquivo-ou-diretorio>")
         sys.exit(1)
-    target = sys.argv[1]
-    if os.path.isdir(target):
-        docs = load_documents_from_dir(target)
+    alvo = sys.argv[1]
+    if os.path.isdir(alvo):
+        docs = carregar_documentos_do_diretorio(alvo)
     else:
-        docs = load_document(target)
+        docs = carregar_documento(alvo)
     print(f"\nTotal de documentos carregados: {len(docs)}")
     for d in docs[:3]:
-        print(f"  → {len(d.page_content)} chars | fonte: {d.metadata.get('source', '?')}")
+        print(f"  -> {len(d.page_content)} chars | fonte: {d.metadata.get('source', '?')}")
