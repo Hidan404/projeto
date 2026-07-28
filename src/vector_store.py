@@ -13,12 +13,6 @@ DIR_PERSISTENCIA = os.path.join(os.path.dirname(__file__), "..", "data", "chroma
 
 
 def obter_embeddings():
-    chave_api = os.getenv("OPENAI_API_KEY")
-    if chave_api and chave_api.startswith("sk-"):
-        try:
-            return OpenAIEmbeddings(openai_api_key=chave_api)
-        except Exception:
-            pass
     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 
