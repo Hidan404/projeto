@@ -54,8 +54,7 @@ def criar_cadeia_qa(modelo: str = "", temperatura: float = 0.0):
         )
 
     if chave_api.startswith("gsk_"):
-        if not modelo:
-            modelo = MODELO_PADRAO
+        modelo = MODELO_PADRAO
         llm = ChatOpenAI(
             model=modelo,
             temperature=temperatura,
@@ -85,7 +84,7 @@ def perguntar(
     pergunta: str,
     cadeia=None,
     recuperador=None,
-    modelo: str = "gpt-4o-mini",
+    modelo: str = "",
     temperatura: float = 0.0,
 ) -> Tuple[str, List[Document]]:
     if cadeia is None or recuperador is None:

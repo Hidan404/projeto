@@ -4,7 +4,7 @@ from retriever import criar_cadeia_qa, perguntar
 
 
 class AgenteConversacional:
-    def __init__(self, modelo: str = "gpt-4o-mini", temperatura: float = 0.0):
+    def __init__(self, modelo: str = "", temperatura: float = 0.0):
         cadeia, recuperador = criar_cadeia_qa(modelo=modelo, temperatura=temperatura)
         self.cadeia = cadeia
         self.recuperador = recuperador
