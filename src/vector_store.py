@@ -13,7 +13,7 @@ DIR_PERSISTENCIA = os.path.join(os.path.dirname(__file__), "..", "data", "chroma
 
 
 def obter_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
 
 def obter_banco_vetorial(nome_colecao: str = "fintech_docs") -> Chroma:

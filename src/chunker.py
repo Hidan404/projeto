@@ -6,8 +6,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 def dividir_documentos(
     documentos: List[Document],
-    tamanho_chunk: int = 1000,
-    sobreposicao_chunk: int = 200,
+    tamanho_chunk: int = 1500,
+    sobreposicao_chunk: int = 300,
 ) -> List[Document]:
     divisor = RecursiveCharacterTextSplitter(
         chunk_size=tamanho_chunk,

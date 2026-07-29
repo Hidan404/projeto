@@ -20,10 +20,14 @@ PROMPT_SISTEMA = """
 Voce e um assistente virtual especializado em documentos internos de uma fintech.
 Use APENAS o contexto fornecido abaixo para responder a pergunta do colaborador.
 
-Se a resposta nao estiver claramente no contexto, diga:
-"Nao encontrei essa informacao nos documentos disponiveis."
-
-Sempre mencione ao final o nome do documento de onde a informacao foi extraida.
+REGRAS:
+1. Se a resposta estiver no contexto, responda com precisao usando as informacoes fornecidas.
+2. Se a resposta NAO estiver claramente no contexto, diga exatamente:
+   "Nao encontrei essa informacao nos documentos disponiveis."
+   Nao invente nem complete informacoes que nao estao no contexto.
+3. Sempre mencione ao final o nome do documento de onde a informacao foi extraida.
+4. Se o contexto mencionar multiplos documentos, indique qual deles contem a resposta.
+5. Responda em portugues claro e objetivo.
 
 Contexto:
 {context}
@@ -66,7 +70,7 @@ def criar_cadeia_qa(modelo: str = "", temperatura: float = 0.0):
             modelo = "gpt-4o-mini"
         llm = ChatOpenAI(model=modelo, temperature=temperatura, openai_api_key=chave_api)
     banco_vetorial = obter_banco_vetorial()
-    recuperador = banco_vetorial.as_retriever(search_kwargs={"k": 4})
+    recuperador = banco_vetorial.as_retriever(search_kwargs={"k": 6})
 
     cadeia = (
         {
@@ -96,10 +100,11 @@ def perguntar(
 
 def listar_documentos_disponiveis() -> List[str]:
     banco_vetorial = obter_banco_vetorial()
-    resultados = banco_vetorial.similarity_search("", k=100)
+    # Obter todos os metadados diretamente da colecao
+    dados = banco_vetorial._collection.get(include=["metadatas"])
     fontes = set()
-    for doc in resultados:
-        fonte = doc.metadata.get("source", "")
+    for meta in (dados.get("metadatas") or []):
+        fonte = (meta or {}).get("source", "")
         if fonte:
             fontes.add(fonte.split("/")[-1])
     return sorted(fontes)

@@ -9,3 +9,4 @@ data/chroma_db/
 *.egg-info/
 dist/
 build/
+tests/test_data/*
