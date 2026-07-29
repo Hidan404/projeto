@@ -11,23 +11,16 @@ class AgenteConversacional:
         resultados = executar_ferramentas(mensagem)
 
         textos = []
-        todos_fontes = set()
+        todas_fontes = set()
 
-        for resposta, nome_ferramenta, fontes in resultados:
+        for resposta, _, fontes in resultados:
             textos.append(resposta)
             for f in fontes:
-                todos_fontes.add(f)
+                todas_fontes.add(f)
 
-        if len(textos) == 1:
-            resposta = textos[0]
-        else:
-            resposta = (
-                "Combinando informacoes dos documentos e do banco de dados:\n\n"
-                + "\n\n---\n\n".join(textos)
-            )
-
-        if todos_fontes:
-            resposta += f"\n\n(Fontes: {', '.join(sorted(todos_fontes))})"
+        resposta = "\n\n".join(textos)
+        if todas_fontes:
+            resposta += f"\n\n(Fontes: {', '.join(sorted(todas_fontes))})"
 
         self.historico.append({"pergunta": mensagem, "resposta": resposta})
         return resposta

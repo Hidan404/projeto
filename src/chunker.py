@@ -37,3 +37,4 @@ if __name__ == "__main__":
         for p in pedacos[:3]:
             print(f"\n--- Chunk (fonte: {p.metadata.get('source', '?')}) ---")
             print(p.page_content[:200])
+            
