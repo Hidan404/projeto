@@ -7,7 +7,6 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "src"))
 
 from agent import AgenteConversacional
-from banco import resumo_banco
 from retriever import listar_documentos_disponiveis
 
 st.set_page_config(
@@ -30,7 +29,6 @@ def carregar_agente():
 
 
 documents = listar_documentos_disponiveis()
-esquema_banco = resumo_banco()
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
@@ -73,13 +71,6 @@ with st.sidebar:
             st.markdown(f"- {doc}")
     else:
         st.info("Nenhum documento encontrado.")
-
-    st.divider()
-    st.header("🗄️ Banco de Dados")
-    with st.expander("Ver esquema"):
-        st.text(esquema_banco)
-
-    st.divider()
 
     if st.button("🧹 Limpar histórico", use_container_width=True):
         st.session_state.historico = []

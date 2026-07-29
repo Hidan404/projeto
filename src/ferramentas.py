@@ -66,31 +66,52 @@ ferramentas_disponiveis = [ferramenta_documentos, ferramenta_banco]
 
 
 def classificar_pergunta(pergunta: str) -> List[Tool]:
-    """Classifica a pergunta para determinar quais ferramentas usar."""
-    p = pergunta.lower()
+    """Classifica a pergunta para determinar quais ferramentas usar.
 
-    palavras_documentos = [
+    - Se a pergunta mencionar termos de documentos (politica, privacidade,
+      contrato, etc.), usa APENAS documentos.
+    - Se mencionar termos de banco de dados (cliente, faturamento, transacao,
+      etc.) sem termos de documento, usa APENAS banco.
+    - Soh combina os dois quando ha indicadores fortes de ambos os dominios
+      (ex: "qual a politica de dados dos clientes ativos?").
+    """
+    pergunta_lower = pergunta.lower()
+
+    # Palavras que indicam pergunta SOBRE documentos (politicas, contratos)
+    palavras_docs_forte = [
         "politica", "privacidade", "contrato", "termo", "biometrico",
         "nubank", "stripe", "picpay", "mercadopago", "documento",
-        "lgpd", "dado pessoal", "seguranca", "clausula", "procedimento",
+        "lgpd", "dado pessoal", "clausula",
     ]
-    palavras_banco = [
-        "cliente", "empresa", "cnpj", "faturamento", "plano", "segmento",
-        "produto", "servico", "credito", "cartao", "taxa", "juro",
-        "transac", "movimentac", "entrada", "saida", "receita", "despesa",
-        "total", "maior", "menor", "medio", "top", "ranking", "giro",
-        "conta digital", "maquininha", "cambio", "antecipac",
+    # Palavras que indicam pergunta SOBRE dados estruturados
+    palavras_banco_forte = [
+        "faturamento", "segmento", "cnpj", "transac", "movimentac",
+        "entrada", "saida", "receita", "despesa", "total",
+        "maior", "menor", "medio", "top", "ranking", "giro",
+        "taxa", "juro", "conta digital", "maquininha", "cambio",
+        "antecipac", "plano",
+    ]
+    # Palavras ambivalentes - so ativam banco se nao houver termos de documento
+    palavras_banco_fraco = [
+        "cliente", "empresa", "produto", "servico", "credito", "cartao",
     ]
 
-    usar_docs = any(palavra in p for palavra in palavras_documentos)
-    usar_banco = any(palavra in p for palavra in palavras_banco)
+    tem_docs = any(palavra in pergunta_lower for palavra in palavras_docs_forte)
+    tem_banco_forte = any(palavra in pergunta_lower for palavra in palavras_banco_forte)
+    tem_banco_fraco = any(palavra in pergunta_lower for palavra in palavras_banco_fraco)
 
     ferramentas_selecionadas = []
-    if usar_docs:
+
+    if tem_docs:
+        # Prioritariamente documentos
         ferramentas_selecionadas.append(ferramenta_documentos)
-    if usar_banco:
+        # Soh adiciona banco se houver termo FORTE de banco (nao apenas "cliente")
+        if tem_banco_forte:
+            ferramentas_selecionadas.append(ferramenta_banco)
+    elif tem_banco_forte or tem_banco_fraco:
         ferramentas_selecionadas.append(ferramenta_banco)
-    if not ferramentas_selecionadas:
+    else:
+        # Fallback: documentos
         ferramentas_selecionadas.append(ferramenta_documentos)
 
     return ferramentas_selecionadas
