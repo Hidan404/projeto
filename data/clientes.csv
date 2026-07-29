@@ -1,0 +1,11 @@
+id,nome_empresa,cnpj,segmento,data_cadastro,status,plano,faturamento_mensal_estimado
+1,TechSolucoes Ltda,12.345.678/0001-90,Tecnologia,2024-01-15,ativo,Enterprise,500000
+2,Comercial Silva SA,23.456.789/0001-01,Varejo,2024-03-20,ativo,Profissional,180000
+3,Construtora Nova Era,34.567.890/0001-12,Construcao,2024-06-10,ativo,Basico,95000
+4,Saude Total Ltda,45.678.901/0001-23,Saude,2024-08-05,ativo,Enterprise,750000
+5,EducaBrasil,56.789.012/0001-34,Educacao,2024-09-01,inativo,Profissional,120000
+6,Logistica Rapida,67.890.123/0001-45,Logistica,2024-10-15,ativo,Profissional,320000
+7,AgroTech Brasil,78.901.234/0001-56,Agro,2024-11-20,ativo,Enterprise,920000
+8,Digital Media Group,89.012.345/0001-67,Midia,2025-01-10,ativo,Basico,65000
+9,Energia Sustentavel,90.123.456/0001-78,Energia,2025-02-25,ativo,Profissional,280000
+10,Transportadora Nacional,01.234.567/0001-89,Transporte,2025-04-01,inativo,Basico,88000

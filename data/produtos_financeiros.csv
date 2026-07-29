@@ -1,0 +1,7 @@
+id,nome,tipo,descricao,taxa_juros_mensal,prazo_minimo_dias,prazo_maximo_dias,valor_minimo,valor_maximo,requisitos
+1,Antecipacao de Recebiveis,credito,Antecipe vendas no cartao de credito,2.5,30,180,5000,500000,6 meses de operacao
+2,Conta Digital PJ,servico,Conta corrente empresarial completa,,,,,,CNPJ ativo
+3,Maquininha Smart,servico,Maquininha com NFC e PIX,,,,,,
+4,Linha de Credito GIRO,credito,Capital de giro para empresas,3.2,60,360,10000,1000000,Faturamento mensal > 50k
+5,Cartao Corporativo Platinum,credito,Cartao para despesas empresariais,4.5,,,,200000,Analise de credito
+6,Cambio Comercial,servico,Cambio para importacao e exportacao,0.8,,,,,Conta PJ ativa

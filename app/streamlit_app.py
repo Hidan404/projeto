@@ -7,6 +7,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "src"))
 
 from agent import AgenteConversacional
+from banco import resumo_banco
 from retriever import listar_documentos_disponiveis
 
 st.set_page_config(
@@ -17,8 +18,9 @@ st.set_page_config(
 
 st.title("🤖 Agente Fintech")
 st.markdown(
-    "Assistente virtual especializado em documentos internos da fintech. "
-    "Faça perguntas sobre políticas, contratos e procedimentos."
+    "Assistente virtual que consulta **documentos internos** "
+    "e **banco de dados** da fintech para responder perguntas "
+    "de colaboradores."
 )
 
 
@@ -27,13 +29,8 @@ def carregar_agente():
     return AgenteConversacional()
 
 
-@st.cache_data
-def carregar_documentos():
-    try:
-        return listar_documentos_disponiveis()
-    except Exception:
-        return []
-
+documents = listar_documentos_disponiveis()
+esquema_banco = resumo_banco()
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
@@ -47,7 +44,7 @@ def enviar_mensagem():
     st.session_state.historico.append({"papel": "usuario", "texto": pergunta})
     st.session_state.input_usuario = ""
 
-    with st.spinner("Consultando documentos..."):
+    with st.spinner("Consultando documentos e banco de dados..."):
         try:
             agente = carregar_agente()
             resposta = agente.perguntar(pergunta)
@@ -63,20 +60,24 @@ for msg in st.session_state.historico:
         st.markdown(msg["texto"])
 
 st.chat_input(
-    "Digite sua pergunta sobre os documentos...",
+    "Digite sua pergunta...",
     key="input_usuario",
     on_submit=enviar_mensagem,
 )
 
 
 with st.sidebar:
-    st.header("📄 Documentos Disponíveis")
-    docs = carregar_documentos()
-    if docs:
-        for doc in docs:
+    st.header("📄 Documentos")
+    if documents:
+        for doc in documents:
             st.markdown(f"- {doc}")
     else:
-        st.info("Nenhum documento encontrado no banco vetorial.")
+        st.info("Nenhum documento encontrado.")
+
+    st.divider()
+    st.header("🗄️ Banco de Dados")
+    with st.expander("Ver esquema"):
+        st.text(esquema_banco)
 
     st.divider()
 
@@ -86,7 +87,7 @@ with st.sidebar:
 
     st.divider()
     st.caption(
-        "Modelo: Groq Llama 3.3 70B  |  "
-        "Embeddings: all-MiniLM-L6-v2  |  "
-        "Banco: ChromaDB"
+        "RAG: ChromaDB + all-MiniLM-L6-v2  |  "
+        "SQL: SQLite  |  "
+        "LLM: Groq Llama 3.3 70B"
     )

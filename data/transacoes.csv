@@ -1,0 +1,23 @@
+id,cliente_id,tipo,valor,data,status,produto_id,descricao
+1,1,entrada,150000.00,2025-06-01,concluido,1,Antecipacao de recebiveis - junho
+2,1,saida,4500.00,2025-06-02,concluido,5,Taxa de adesao cartao platinum
+3,2,entrada,45000.00,2025-06-03,concluido,1,Antecipacao de recebiveis
+4,2,saida,120.00,2025-06-03,concluido,2,Tarifa mensal conta digital
+5,3,entrada,15000.00,2025-06-05,concluido,4,Primeira parcela credito GIRO
+6,4,entrada,300000.00,2025-06-07,concluido,4,Linha de credito GIRO
+7,4,saida,2500.00,2025-06-07,concluido,2,Tarifa mensal conta digital
+8,5,entrada,0.00,2025-06-10,cancelado,2,Tentativa de abertura conta
+9,6,entrada,85000.00,2025-06-12,concluido,1,Antecipacao de recebiveis
+10,6,saida,320.00,2025-06-12,concluido,3,Compra maquininha smart
+11,7,entrada,500000.00,2025-06-15,concluido,4,Linha de credito GIRO
+12,7,entrada,12000.00,2025-06-16,concluido,5,Fatura cartao corporativo
+13,8,entrada,5000.00,2025-06-18,concluido,1,Antecipacao de recebiveis
+14,9,entrada,60000.00,2025-06-20,concluido,6,Operacao de cambio
+15,9,saida,480.00,2025-06-20,concluido,6,Taxa de cambio
+16,10,entrada,0.00,2025-07-01,pendente,2,Solicitacao conta digital
+17,1,entrada,200000.00,2025-07-02,pendente,4,Solicitacao credito GIRO
+18,3,entrada,25000.00,2025-07-03,pendente,1,Antecipacao de recebiveis
+19,6,entrada,100000.00,2025-07-05,pendente,4,Solicitacao credito GIRO
+20,7,entrada,8000.00,2025-07-06,pendente,5,Fatura cartao corporativo
+21,4,entrada,350000.00,2025-07-08,concluido,4,Segunda parcela credito GIRO
+22,2,entrada,55000.00,2025-07-10,concluido,1,Antecipacao de recebiveis

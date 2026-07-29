@@ -1,28 +1,35 @@
 from typing import List
 
-from retriever import criar_cadeia_qa, perguntar
+from ferramentas import executar_ferramentas
 
 
 class AgenteConversacional:
-    def __init__(self, modelo: str = "", temperatura: float = 0.0):
-        cadeia, recuperador = criar_cadeia_qa(modelo=modelo, temperatura=temperatura)
-        self.cadeia = cadeia
-        self.recuperador = recuperador
+    def __init__(self):
         self.historico: List[dict] = []
 
     def perguntar(self, mensagem: str) -> str:
-        resposta, contexto = perguntar(mensagem, cadeia=self.cadeia, recuperador=self.recuperador)
+        resultados = executar_ferramentas(mensagem)
+
+        textos = []
+        todos_fontes = set()
+
+        for resposta, nome_ferramenta, fontes in resultados:
+            textos.append(resposta)
+            for f in fontes:
+                todos_fontes.add(f)
+
+        if len(textos) == 1:
+            resposta = textos[0]
+        else:
+            resposta = (
+                "Combinando informacoes dos documentos e do banco de dados:\n\n"
+                + "\n\n---\n\n".join(textos)
+            )
+
+        if todos_fontes:
+            resposta += f"\n\n(Fontes: {', '.join(sorted(todos_fontes))})"
+
         self.historico.append({"pergunta": mensagem, "resposta": resposta})
-
-        fontes = set()
-        for doc in contexto:
-            nome = doc.metadata.get("source", "").split("/")[-1]
-            if nome:
-                fontes.add(nome)
-
-        if fontes:
-            resposta += f"\n\n(Fontes: {', '.join(sorted(fontes))})"
-
         return resposta
 
     def limpar_historico(self):
