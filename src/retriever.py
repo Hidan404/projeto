@@ -98,15 +98,14 @@ def perguntar(
 
 
 def listar_documentos_disponiveis() -> List[str]:
-    banco_vetorial = obter_banco_vetorial()
-    # Obter todos os metadados diretamente da colecao
-    dados = banco_vetorial._collection.get(include=["metadatas"])
-    fontes = set()
-    for meta in (dados.get("metadatas") or []):
-        fonte = (meta or {}).get("source", "")
-        if fonte:
-            fontes.add(fonte.split("/")[-1])
-    return sorted(fontes)
+    """Lista os documentos no diretorio data/documents/ (sem acessar ChromaDB)."""
+    dir_docs = os.path.join(os.path.dirname(__file__), "..", "data", "documents")
+    if not os.path.isdir(dir_docs):
+        return []
+    return sorted(
+        f for f in os.listdir(dir_docs)
+        if os.path.isfile(os.path.join(dir_docs, f)) and not f.startswith(".")
+    )
 
 
 if __name__ == "__main__":

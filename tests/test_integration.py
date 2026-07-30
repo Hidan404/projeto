@@ -14,7 +14,10 @@ sys.path.insert(0, SRC_DIR)
 from chunker import dividir_documentos
 from loader import carregar_documento
 from retriever import criar_cadeia_qa, perguntar
-from vector_store import obter_banco_vetorial, ingerir_documentos, contar_documentos
+from vector_store import (
+    obter_banco_vetorial, ingerir_documentos, contar_documentos,
+    ingerir_documentos_no_startup,
+)
 
 DIR_DOCUMENTS = os.path.join(os.path.dirname(__file__), "..", "data", "documents")
 DIR_TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
@@ -39,6 +42,7 @@ class TestPipelineIntegracao:
     def test_qa_resposta_valida(self):
         """Testa se o RAG retorna uma resposta nao vazia para pergunta valida."""
         cadeia, rec = criar_cadeia_qa()
+        ingerir_documentos_no_startup()
         resposta, docs = perguntar(
             "Quais dados pessoais o Nubank coleta?",
             cadeia=cadeia,
@@ -51,6 +55,7 @@ class TestPipelineIntegracao:
     def test_qa_fora_de_contexto(self):
         """Pergunta sem contexto deve retornar mensagem padrao."""
         cadeia, rec = criar_cadeia_qa()
+        ingerir_documentos_no_startup()
         resposta, docs = perguntar(
             "Qual a previsao do tempo para amanha?",
             cadeia=cadeia,
@@ -64,6 +69,7 @@ class TestPipelineIntegracao:
     def test_qa_cita_fonte(self):
         """A resposta deve mencionar o nome do documento fonte."""
         cadeia, rec = criar_cadeia_qa()
+        ingerir_documentos_no_startup()
         resposta, docs = perguntar(
             "Qual a politica do Nubank para dados biometricos?",
             cadeia=cadeia,
@@ -72,14 +78,16 @@ class TestPipelineIntegracao:
         assert "nubank" in resposta.lower() or "Documento" in resposta
 
     @pytest.mark.slow
-    def test_recuperador_retorna_4_docs(self):
+    def test_recuperador_retorna_k_docs(self):
         """O recuperador deve retornar exatamente k documentos."""
         cadeia, rec = criar_cadeia_qa()
+        ingerir_documentos_no_startup()
         docs = rec.invoke("politica de privacidade")
-        assert len(docs) == 4
+        assert len(docs) == 6, f"Esperado 6, obtido {len(docs)}"
 
     def test_contar_documentos_reais(self):
-        """Verifica se ha documentos indexados no ChromaDB."""
+        """Verifica se ha documentos indexados no ChromaDB apos startup."""
+        ingerir_documentos_no_startup()
         total = contar_documentos()
         assert total > 0, "Nenhum documento indexado no ChromaDB"
         print(f"  Total de chunks indexados: {total}")

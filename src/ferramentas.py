@@ -6,6 +6,7 @@ from langchain_core.tools import Tool
 
 from banco import inicializar_banco, perguntar_banco, resumo_banco
 from retriever import criar_cadeia_qa, perguntar as perguntar_rag
+from vector_store import ingerir_documentos_no_startup
 
 # Inicializacao lazy — sem side effects no import
 _inicializado = False
@@ -19,6 +20,7 @@ def inicializar_ferramentas():
         return
     inicializar_banco()
     _cadeia, _recuperador = criar_cadeia_qa()
+    ingerir_documentos_no_startup()
     descricao_banco = resumo_banco()
     ferramenta_banco.description = (
         "Usar para perguntas sobre dados estruturados: "

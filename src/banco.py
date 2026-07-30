@@ -4,16 +4,23 @@ import sqlite3
 from typing import Any, Dict, List, Optional
 
 DIR_DADOS = os.path.join(os.path.dirname(__file__), "..", "data")
-CAMINHO_BANCO = os.path.join(DIR_DADOS, "fintech.db")
+TABELAS_VALIDAS = {"clientes", "produtos_financeiros", "transacoes"}
+
+_conn: Optional[sqlite3.Connection] = None
+
+
+def _get_conn() -> sqlite3.Connection:
+    global _conn
+    if _conn is None:
+        _conn = sqlite3.connect(":memory:", check_same_thread=False)
+        _conn.row_factory = sqlite3.Row
+        _conn.execute("PRAGMA foreign_keys = ON")
+    return _conn
 
 
 def inicializar_banco() -> str:
-    """Cria as tabelas e importa os CSVs se o banco ainda nao existir."""
-    if os.path.exists(CAMINHO_BANCO):
-        return CAMINHO_BANCO
-
-    conn = sqlite3.connect(CAMINHO_BANCO)
-    conn.execute("PRAGMA foreign_keys = ON")
+    """Cria as tabelas e importa os CSVs. Sempre executa (banco em memoria)."""
+    conn = _get_conn()
     cursor = conn.cursor()
 
     cursor.executescript("""
@@ -60,8 +67,7 @@ def inicializar_banco() -> str:
     _importar_csv(conn, "transacoes.csv")
 
     conn.commit()
-    conn.close()
-    return CAMINHO_BANCO
+    return ":memory:"
 
 
 def _importar_csv(conn: sqlite3.Connection, nome_arquivo: str):
@@ -84,35 +90,29 @@ def _importar_csv(conn: sqlite3.Connection, nome_arquivo: str):
 
 def executar_sql(sql: str, params: Optional[tuple] = None) -> List[Dict[str, Any]]:
     """Executa uma consulta SQL e retorna lista de dicionarios."""
-    conn = sqlite3.connect(CAMINHO_BANCO)
-    conn.row_factory = sqlite3.Row
+    conn = _get_conn()
     cursor = conn.cursor()
-    try:
-        cursor.execute(sql, params or ())
-        resultados = [dict(linha) for linha in cursor.fetchall()]
-        return resultados
-    finally:
-        conn.close()
+    cursor.execute(sql, params or ())
+    return [dict(linha) for linha in cursor.fetchall()]
 
 
 def listar_tabelas() -> List[str]:
-    conn = sqlite3.connect(CAMINHO_BANCO)
+    conn = _get_conn()
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tabelas = [linha[0] for linha in cursor.fetchall()]
-    conn.close()
-    return tabelas
+    return [linha[0] for linha in cursor.fetchall()]
 
 
 def descrever_tabela(tabela: str) -> List[Dict[str, str]]:
-    conn = sqlite3.connect(CAMINHO_BANCO)
+    if tabela not in TABELAS_VALIDAS:
+        raise ValueError(f"Tabela invalida: {tabela}")
+    conn = _get_conn()
     cursor = conn.cursor()
     cursor.execute(f"PRAGMA table_info({tabela})")
     colunas = [
         {"nome": linha[1], "tipo": linha[2], "nulo": not linha[3]}
         for linha in cursor.fetchall()
     ]
-    conn.close()
     return colunas
 
 
@@ -302,7 +302,7 @@ def _formatar_resultado(titulo: str, resultados: List[Dict]) -> str:
     if not resultados:
         return f"{titulo}: (nenhum resultado encontrado)"
 
-    cabecalho = f"📊 {titulo}\n" + "-" * 40
+    cabecalho = f"\U0001f4ca {titulo}\n" + "-" * 40
     linhas = []
 
     for r in resultados:
