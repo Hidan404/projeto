@@ -1,9 +1,12 @@
 import csv
 import json
+import logging
 import os
 from typing import List
 
 from langchain_core.documents import Document
+
+logger = logging.getLogger(__name__)
 
 
 def carregar_documento(caminho_arquivo: str) -> List[Document]:
@@ -35,9 +38,9 @@ def carregar_documentos_do_diretorio(diretorio: str) -> List[Document]:
             try:
                 docs = carregar_documento(caminho)
                 todos_docs.extend(docs)
-                print(f"  OK  {nome_arquivo} ({len(docs)} paginas/blocos)")
+                logger.info("%s (%d paginas/blocos)", nome_arquivo, len(docs))
             except Exception as e:
-                print(f"  ERRO {nome_arquivo}: {e}")
+                logger.warning("%s: %s", nome_arquivo, e)
     return todos_docs
 
 

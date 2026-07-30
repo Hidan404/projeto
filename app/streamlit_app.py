@@ -28,7 +28,11 @@ def carregar_agente():
     return AgenteConversacional()
 
 
-documents = listar_documentos_disponiveis()
+@st.cache_data
+def _documentos_disponiveis():
+    return listar_documentos_disponiveis()
+
+documents = _documentos_disponiveis()
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
@@ -56,6 +60,7 @@ def enviar_mensagem():
                 {"papel": "agente", "texto": f"**Erro inesperado:** {e}"}
             )
 
+    st.session_state.historico = st.session_state.historico[-50:]
 
 for msg in st.session_state.historico:
     with st.chat_message(msg["papel"]):

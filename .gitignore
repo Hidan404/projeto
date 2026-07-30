@@ -10,3 +10,4 @@ data/chroma_db/
 dist/
 build/
 tests/test_data/*
+.pytest_cache/
