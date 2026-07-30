@@ -1,7 +1,12 @@
+import os
 import sys
 from pathlib import Path
 
 import streamlit as st
+
+# Streamlit Sharing: injeta a chave vinda dos secrets nos env vars
+if "GROQ_API_KEY" in st.secrets:
+    os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "src"))
