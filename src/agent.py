@@ -1,11 +1,12 @@
 from typing import List
 
-from ferramentas import executar_ferramentas
+from ferramentas import executar_ferramentas, inicializar_ferramentas
 
 
 class AgenteConversacional:
     def __init__(self):
         self.historico: List[dict] = []
+        inicializar_ferramentas()
 
     def perguntar(self, mensagem: str) -> str:
         resultados = executar_ferramentas(mensagem)

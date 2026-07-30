@@ -11,8 +11,6 @@ from langchain_openai import ChatOpenAI
 
 from vector_store import obter_banco_vetorial
 
-load_dotenv()
-
 URL_GROQ = "https://api.groq.com/openai/v1"
 MODELO_PADRAO = "llama-3.3-70b-versatile"
 
@@ -48,6 +46,7 @@ def _formatar_documentos(documentos: List[Document]) -> str:
 
 
 def criar_cadeia_qa(modelo: str = "", temperatura: float = 0.0):
+    load_dotenv()
     chave_api = os.getenv("OPENAI_API_KEY", "")
     if not chave_api:
         chave_api = os.getenv("GROQ_API_KEY", "")

@@ -1,13 +1,9 @@
 import os
 from typing import List
 
-from dotenv import load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
 from langchain_huggingface import HuggingFaceEmbeddings
-
-load_dotenv()
 
 DIR_PERSISTENCIA = os.path.join(os.path.dirname(__file__), "..", "data", "chroma_db")
 

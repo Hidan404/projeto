@@ -7,13 +7,33 @@ from langchain_core.tools import Tool
 from banco import inicializar_banco, perguntar_banco, resumo_banco
 from retriever import criar_cadeia_qa, perguntar as perguntar_rag
 
-inicializar_banco()
-_cadeia, _recuperador = criar_cadeia_qa()
-_DESCRICAO_BANCO = resumo_banco()
+# Inicializacao lazy — sem side effects no import
+_inicializado = False
+_cadeia = None
+_recuperador = None
+
+
+def inicializar_ferramentas():
+    global _inicializado, _cadeia, _recuperador
+    if _inicializado:
+        return
+    inicializar_banco()
+    _cadeia, _recuperador = criar_cadeia_qa()
+    descricao_banco = resumo_banco()
+    ferramenta_banco.description = (
+        "Usar para perguntas sobre dados estruturados: "
+        "clientes, empresas, CNPJ, faturamento, planos, segmentos, "
+        "produtos financeiros, taxas de juros, creditos, cartoes, "
+        "transacoes, movimentacoes, entradas, saidas, valores totais. "
+        "O banco tem as tabelas: clientes, produtos_financeiros, transacoes.\n"
+        f"Schema:\n{descricao_banco}"
+    )
+    _inicializado = True
 
 
 def consultar_documentos(pergunta: str) -> Tuple[str, str, List[str]]:
     """Retorna (resposta_texto, nome_ferramenta, lista_fontes)."""
+    inicializar_ferramentas()
     resultado, docs = perguntar_rag(pergunta, cadeia=_cadeia, recuperador=_recuperador)
     fontes = set()
     for doc in docs if docs else []:
@@ -25,6 +45,7 @@ def consultar_documentos(pergunta: str) -> Tuple[str, str, List[str]]:
 
 def consultar_banco(pergunta: str) -> Tuple[str, str, List[str]]:
     """Retorna (resposta_texto, nome_ferramenta, lista_fontes)."""
+    inicializar_ferramentas()
     texto = perguntar_banco(pergunta)
     return texto, "Banco de Dados", ["Sistema Interno (SQL)"]
 
@@ -51,14 +72,7 @@ ferramenta_documentos = Tool(
 ferramenta_banco = Tool(
     name="consultar_banco_dados",
     func=_tool_banco,
-    description=(
-        "Usar para perguntas sobre dados estruturados: "
-        "clientes, empresas, CNPJ, faturamento, planos, segmentos, "
-        "produtos financeiros, taxas de juros, creditos, cartoes, "
-        "transacoes, movimentacoes, entradas, saidas, valores totais. "
-        "O banco tem as tabelas: clientes, produtos_financeiros, transacoes.\n"
-        f"Schema:\n{_DESCRICAO_BANCO}"
-    ),
+    description="Inicializacao pendente... (chame inicializar_ferramentas() primeiro)",
 )
 
 ferramentas_disponiveis = [ferramenta_documentos, ferramenta_banco]
