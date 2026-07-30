@@ -76,14 +76,20 @@ def _carregar_csv(caminho: str) -> List[Document]:
 
 def _carregar_json(caminho: str) -> List[Document]:
     with open(caminho, "r", encoding="utf-8") as f:
-        dados = json.load(f)
+        try:
+            dados = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Arquivo JSON mal formado: {e}") from e
     texto = json.dumps(dados, ensure_ascii=False, indent=2)
     return [Document(page_content=texto, metadata={"source": caminho})]
 
 
 def _carregar_docx(caminho: str) -> List[Document]:
     from docx import Document as DocxDocument
-    doc = DocxDocument(caminho)
+    try:
+        doc = DocxDocument(caminho)
+    except Exception as e:
+        raise ValueError(f"Arquivo DOCX corrompido ou invalido: {e}") from e
     paragrafos = [p.text for p in doc.paragraphs if p.text.strip()]
     texto = "\n".join(paragrafos)
     return [Document(page_content=texto, metadata={"source": caminho})]
@@ -91,8 +97,11 @@ def _carregar_docx(caminho: str) -> List[Document]:
 
 def _carregar_pptx(caminho: str) -> List[Document]:
     from pptx import Presentation
+    try:
+        apresentacao = Presentation(caminho)
+    except Exception as e:
+        raise ValueError(f"Arquivo PPTX corrompido ou invalido: {e}") from e
     docs = []
-    apresentacao = Presentation(caminho)
     for i, slide in enumerate(apresentacao.slides):
         textos = []
         for forma in slide.shapes:
@@ -111,15 +120,21 @@ def _carregar_pptx(caminho: str) -> List[Document]:
 def _carregar_html(caminho: str) -> List[Document]:
     from bs4 import BeautifulSoup
     with open(caminho, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f.read(), "lxml")
+        try:
+            soup = BeautifulSoup(f.read(), "lxml")
+        except Exception as e:
+            raise ValueError(f"Arquivo HTML mal formado: {e}") from e
     texto = soup.get_text(separator="\n", strip=True)
     return [Document(page_content=texto, metadata={"source": caminho})]
 
 
 def _carregar_xlsx(caminho: str) -> List[Document]:
     import pandas as pd
+    try:
+        planilha = pd.ExcelFile(caminho)
+    except Exception as e:
+        raise ValueError(f"Arquivo XLSX corrompido ou invalido: {e}") from e
     docs = []
-    planilha = pd.ExcelFile(caminho)
     for nome_aba in planilha.sheet_names:
         df = pd.read_excel(caminho, sheet_name=nome_aba)
         conteudo = df.to_string(index=False)

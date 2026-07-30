@@ -47,9 +47,13 @@ def enviar_mensagem():
             agente = carregar_agente()
             resposta = agente.perguntar(pergunta)
             st.session_state.historico.append({"papel": "agente", "texto": resposta})
+        except TimeoutError as e:
+            st.session_state.historico.append(
+                {"papel": "agente", "texto": "**Servico temporariamente indisponivel.** A API de IA demorou muito para responder. Tente novamente em alguns instantes."}
+            )
         except Exception as e:
             st.session_state.historico.append(
-                {"papel": "agente", "texto": f"**Erro:** {e}"}
+                {"papel": "agente", "texto": f"**Erro inesperado:** {e}"}
             )
 
 

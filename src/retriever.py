@@ -63,11 +63,19 @@ def criar_cadeia_qa(modelo: str = "", temperatura: float = 0.0):
             temperature=temperatura,
             openai_api_key=chave_api,
             openai_api_base=URL_GROQ,
+            timeout=30,
+            max_retries=2,
         )
     else:
         if not modelo:
             modelo = "gpt-4o-mini"
-        llm = ChatOpenAI(model=modelo, temperature=temperatura, openai_api_key=chave_api)
+        llm = ChatOpenAI(
+            model=modelo,
+            temperature=temperatura,
+            openai_api_key=chave_api,
+            timeout=30,
+            max_retries=2,
+        )
     banco_vetorial = obter_banco_vetorial()
     recuperador = banco_vetorial.as_retriever(search_kwargs={"k": 6})
 
