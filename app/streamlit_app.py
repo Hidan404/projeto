@@ -117,6 +117,7 @@ def _salvar_historico(historico):
             f"{json.dumps(conteudo)})"
         ),
         key=f"salvar_{chave_hash}",
+        want_output=False,
     )
 
 
@@ -124,17 +125,21 @@ def _limpar_local_storage():
     streamlit_js_eval(
         js_expressions=f"localStorage.removeItem('{CHAVE_HISTORICO}')",
         key="limpar_historico",
+        want_output=False,
     )
 
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
 
-if "historico_carregado" not in st.session_state:
+# So marca como carregado quando o valor REAL chega do navegador.
+# Na primeira renderizacao o componente ainda nao montou e retorna None;
+# quando o iframe envia o valor, o Streamlit reroda o script e lemos aqui.
+if not st.session_state.get("historico_carregado"):
     historico = _historico_do_local_storage()
     if isinstance(historico, list):
         st.session_state.historico = historico
-    st.session_state.historico_carregado = True
+        st.session_state.historico_carregado = True
 
 documents = _documentos_disponiveis()
 
@@ -167,17 +172,8 @@ def enviar_mensagem(pergunta=None):
     _salvar_historico(st.session_state.historico)
 
 
-for msg in st.session_state.historico:
-    with st.chat_message(msg["papel"]):
-        st.markdown(msg["texto"])
-
-st.chat_input(
-    "Digite sua pergunta...",
-    key="input_usuario",
-    on_submit=enviar_mensagem,
-)
-
-
+# Sidebar vem ANTES do loop de mensagens: o clique em sugestao processa o
+# historico no mesmo run, entao a resposta aparece sem precisar de 2o clique.
 with st.sidebar:
     st.markdown("### ✨ Perguntas sugeridas")
     st.caption("Clique em uma pergunta para enviar")
@@ -215,3 +211,14 @@ with st.sidebar:
         "SQL: SQLite  |  "
         "LLM: Groq Llama 3.3 70B"
     )
+
+
+for msg in st.session_state.historico:
+    with st.chat_message(msg["papel"]):
+        st.markdown(msg["texto"])
+
+st.chat_input(
+    "Digite sua pergunta...",
+    key="input_usuario",
+    on_submit=enviar_mensagem,
+)
