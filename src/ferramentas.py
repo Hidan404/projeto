@@ -1,5 +1,7 @@
 """Ferramentas que o agente pode usar: documentos (RAG) e banco de dados (SQL)."""
 
+import re
+import unicodedata
 from typing import List, Tuple
 
 from langchain_core.tools import Tool
@@ -81,15 +83,31 @@ ferramentas_disponiveis = [ferramenta_documentos, ferramenta_banco]
 """Lista de ferramentas disponiveis para o agente."""
 
 
+def _normalizar(texto: str) -> str:
+    """Remove acentos e converte para minusculas."""
+    texto = texto.lower()
+    return "".join(
+        c for c in unicodedata.normalize("NFD", texto)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+def _termo_na_pergunta(termo: str, p: str) -> bool:
+    """Casa termos como palavra inteira (plural opcional); frases via substring."""
+    if " " in termo:
+        return termo in p
+    return bool(re.search(rf"\b{re.escape(termo)}s?\b", p))
+
+
 def classificar_pergunta(pergunta: str) -> List[Tool]:
     """Classifica a pergunta para uma UNICA ferramenta.
 
     - Termo de documento (politica, privacidade, contrato) → documentos
-    - Termo de banco (cliente, faturamento, transacao) → banco de dados
+    - Termo de banco (cliente, produto, transacao) → banco de dados
     - Documentos tem prioridade sobre banco em caso de ambiguidade
     - Se nenhum termo for detectado, usa documentos (fallback)
     """
-    p = pergunta.lower()
+    p = _normalizar(pergunta)
 
     palavras_documentos = [
         "politica", "privacidade", "contrato", "termo", "biometrico",
@@ -100,14 +118,19 @@ def classificar_pergunta(pergunta: str) -> List[Tool]:
     ]
     palavras_banco = [
         "cliente", "empresa", "cnpj", "faturamento", "segmento",
-        "transac", "movimentac", "entrada", "saida", "receita", "despesa",
-        "total", "maior", "menor", "medio", "top", "ranking", "giro",
-        "conta digital", "maquininha", "cambio", "antecipac",
+        "transacao", "transacoes", "movimentacao", "movimentacoes",
+        "entrada", "saida", "receita", "despesa",
+        "total", "totais", "maior", "menor", "media", "medio",
+        "top", "ranking", "giro",
+        "conta digital", "maquininha", "cambio",
+        "antecipacao", "antecipacoes",
         "cadastrados", "listar", "quantos",
+        "produto", "credito", "taxa", "juros", "servico",
+        "valor", "valores", "cartao", "cartoes", "plano", "emprestimo",
     ]
 
-    tem_docs = any(palavra in p for palavra in palavras_documentos)
-    tem_banco = any(palavra in p for palavra in palavras_banco)
+    tem_docs = any(_termo_na_pergunta(t, p) for t in palavras_documentos)
+    tem_banco = any(_termo_na_pergunta(t, p) for t in palavras_banco)
 
     if tem_docs:
         return [ferramenta_documentos]
