@@ -1,8 +1,11 @@
+import hashlib
+import json
 import os
 import sys
 from pathlib import Path
 
 import streamlit as st
+from streamlit_js_eval import streamlit_js_eval
 
 # Streamlit Sharing: injeta a chave vinda dos secrets nos env vars
 if "GROQ_API_KEY" in st.secrets:
@@ -13,6 +16,9 @@ sys.path.insert(0, str(RAIZ / "src"))
 
 from agent import AgenteConversacional
 from retriever import listar_documentos_disponiveis
+
+CHAVE_HISTORICO = "historico_chat_fintech"
+LIMITE_HISTORICO = 50
 
 st.set_page_config(
     page_title="Agente Fintech",
@@ -37,10 +43,54 @@ def carregar_agente():
 def _documentos_disponiveis():
     return listar_documentos_disponiveis()
 
-documents = _documentos_disponiveis()
+
+def _historico_do_local_storage():
+    """Le o historico persistido no localStorage do navegador."""
+    try:
+        valor = streamlit_js_eval(
+            js_expressions=f"localStorage.getItem('{CHAVE_HISTORICO}')",
+            key="ler_historico",
+            want_output=True,
+        )
+        if valor:
+            dados = json.loads(valor)
+            if isinstance(dados, list):
+                return dados
+    except Exception:
+        pass
+    return None
+
+
+def _salvar_historico(historico):
+    """Persiste o historico no localStorage (chave unica por conteudo)."""
+    conteudo = json.dumps(historico, ensure_ascii=False)
+    chave_hash = hashlib.md5(conteudo.encode()).hexdigest()[:16]
+    streamlit_js_eval(
+        js_expressions=(
+            f"localStorage.setItem('{CHAVE_HISTORICO}', "
+            f"{json.dumps(conteudo)})"
+        ),
+        key=f"salvar_{chave_hash}",
+    )
+
+
+def _limpar_local_storage():
+    streamlit_js_eval(
+        js_expressions=f"localStorage.removeItem('{CHAVE_HISTORICO}')",
+        key="limpar_historico",
+    )
+
 
 if "historico" not in st.session_state:
     st.session_state.historico = []
+
+if "historico_carregado" not in st.session_state:
+    historico = _historico_do_local_storage()
+    if isinstance(historico, list):
+        st.session_state.historico = historico
+    st.session_state.historico_carregado = True
+
+documents = _documentos_disponiveis()
 
 
 def enviar_mensagem():
@@ -65,7 +115,9 @@ def enviar_mensagem():
                 {"papel": "agente", "texto": f"**Erro inesperado:** {e}"}
             )
 
-    st.session_state.historico = st.session_state.historico[-50:]
+    st.session_state.historico = st.session_state.historico[-LIMITE_HISTORICO:]
+    _salvar_historico(st.session_state.historico)
+
 
 for msg in st.session_state.historico:
     with st.chat_message(msg["papel"]):
@@ -88,6 +140,7 @@ with st.sidebar:
 
     if st.button("🧹 Limpar histórico", use_container_width=True):
         st.session_state.historico = []
+        _limpar_local_storage()
         st.rerun()
 
     st.divider()
